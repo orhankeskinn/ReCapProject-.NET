@@ -5,14 +5,20 @@ using Entities.Concrete;
 
 CarManager carManager = new CarManager(new EfCarDal());
 
-//AddCarTest(carManager);
-var result = carManager.GetAll();
-foreach(var car in result)
-{
-    Console.WriteLine(car.Id + " " + car.ModelYear);
-}  
+var result = carManager.CarDetails();
 
-static void AddCarTest(CarManager carManager)
+if (result.Success)
 {
-    carManager.AddCar(new Car { Id = 1, BrandId = 1, ColorId = 2, Description = "Fiat Doblo", DailyPrice = 300, ModelYear = 2011 });
+    foreach (var car in result.Data)
+    {
+        Console.WriteLine(car.BrandName + " - " + car.CarName + " : " + car.DailyPrice + "TL");
+    }
 }
+
+else
+{
+    Console.WriteLine(result.Message);
+}
+
+
+

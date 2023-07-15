@@ -1,7 +1,9 @@
 ﻿using Business.Abstract;
+using Business.Constants;
+using Core.Results;
 using DataAccess.Abstract;
-using DataAccess.Concrete.InMemory;
 using Entities.Concrete;
+using Entities.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +13,6 @@ using System.Threading.Tasks;
 namespace Business.Concrete
 {
     public class CarManager : ICarService
-
     {
         ICarDal _carDal;
 
@@ -20,24 +21,62 @@ namespace Business.Concrete
             _carDal = carDal;
         }
 
-        public List<Car> GetAll()
+        
+        public IResult Add(Car car)
         {
-            
-            return _carDal.GetAll();
-            
+            _carDal.Add(car);
+
+            return new SuccessResult(Message.CarAdded);
+
         }
 
-        public void AddCar(Car car)
+        public IDataResult<List<CarDetailDto>> CarDetails()
         {
-            if (car.Description.Length >= 2 && car.DailyPrice > 0)
+            return new SuccessDataResult<List<CarDetailDto>>(_carDal.GetCarDetails());
+        }
+
+        public IResult Delete(Car car)
+        {
+            _carDal.Delete(car);
+
+            return new SuccessResult(Message.CarDeleted);
+        }
+
+        public IDataResult<List<Car>> GetAll()
+        {
+            return new SuccessDataResult<List<Car>>(_carDal.GetAll());
+        }
+
+        public IDataResult<Car> GetById(int carId)
+        {
+            return new SuccessDataResult<Car>(_carDal.Get(c => c.Id == carId));
+        }
+
+        public IDataResult<List<Car>> GetCarsByBrandId(int brandId)
+        {
+            return new SuccessDataResult<List<Car>>(_carDal.GetAll(c => c.BrandId == brandId));
+        }
+
+        public IDataResult<List<Car>> GetCarsByColorId(int colorId)
+        {
+            return new SuccessDataResult<List<Car>>(_carDal.GetAll(c => c.ColorId == colorId));
+        }
+
+        public IResult Update(Car car)
+        {
+            if (car.DailyPrice < 0)
             {
-                _carDal.Add(car);
-                Console.WriteLine("Araba başarıyla eklendi.");
+                return new ErrorResult(Message.CarInvalidDailyPrice);
             }
-            else
+
+            if (car.Description.Length <= 2)
             {
-                Console.WriteLine("Araba ismi minimum 2 karakter olmalı ve günlük fiyatı 0'dan büyük olmalı.");
+                return new ErrorResult(Message.CarInvalidName);
             }
+
+            _carDal.Update(car);
+
+            return new SuccessResult(Message.CarUpdated);
         }
     }
 }
